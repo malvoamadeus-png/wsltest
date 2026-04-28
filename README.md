@@ -12,12 +12,15 @@
 ```text
 .
 ├── README.md
+├── requirements.txt
 ├── app
 │   ├── __init__.py
 │   ├── banner.py
 │   ├── calc.py
 │   └── hello.py
-└── main.py
+├── main.py
+└── systemd
+    └── demo-app.service
 ```
 
 ## 你会学到什么
@@ -56,6 +59,14 @@ python3 --version
 python3 main.py
 ```
 
+如果你想模拟“服务器常驻运行”模式，可以执行：
+
+```bash
+python3 main.py --loop --interval 5
+```
+
+停止时按 `Ctrl+C`。
+
 如果你想创建虚拟环境，也可以这样：
 
 ```bash
@@ -79,6 +90,16 @@ code .
 ```
 
 这样 VS Code 会直接以 WSL 环境打开当前目录。你写代码、运行程序，都是在 Linux 环境里完成的。
+
+## 依赖文件
+
+这个项目带了一个最小 [requirements.txt](/mnt/d/Coding/WSLTest/requirements.txt:1)。
+
+当前它没有第三方依赖，但保留这个文件是为了让你的部署流程固定下来：
+
+```bash
+python3 -m pip install -r requirements.txt
+```
 
 ## Git 最小练习流程
 
@@ -181,10 +202,85 @@ scp demo-source.tar.gz user@your-server:/home/user/
 ```bash
 tar xzf demo-source.tar.gz
 cd WSLTest
+python3 -m pip install -r requirements.txt
 python3 main.py
 ```
 
 更稳妥的学习路径就是直接传源码，因为 Python 项目通常就是这样部署和运行的。
+
+## 用 systemd 管理运行
+
+如果你的程序只是临时测试，直接：
+
+```bash
+python3 main.py
+```
+
+如果你要在服务器上长期后台运行，才考虑 `systemd`。
+
+这个仓库已经提供了一个模板文件：
+
+- [systemd/demo-app.service](/mnt/d/Coding/WSLTest/systemd/demo-app.service:1)
+
+使用前你需要先把里面这两个地方改成服务器上的真实路径和用户名：
+
+- `YOUR_LINUX_USER`
+- `/home/YOUR_LINUX_USER/WSLTest`
+
+### 服务器操作步骤
+
+先把项目拉到服务器，例如：
+
+```bash
+git clone <your-repo-url>
+cd WSLTest
+python3 -m pip install -r requirements.txt
+```
+
+先手工验证常驻模式能跑：
+
+```bash
+python3 main.py --loop --interval 5
+```
+
+确认没问题后，把 service 文件复制到系统目录：
+
+```bash
+sudo cp systemd/demo-app.service /etc/systemd/system/demo-app.service
+```
+
+重新加载配置并启动：
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable demo-app
+sudo systemctl start demo-app
+```
+
+查看状态：
+
+```bash
+sudo systemctl status demo-app
+```
+
+查看日志：
+
+```bash
+sudo journalctl -u demo-app -f
+```
+
+停止服务：
+
+```bash
+sudo systemctl stop demo-app
+```
+
+这套方式的重点不是“替代 Git”或“替代 Python”，而是让 Linux 负责：
+
+- 后台启动
+- 崩溃自动重启
+- 开机自动运行
+- 日志集中查看
 
 ## 建议你现在就练
 
@@ -194,12 +290,15 @@ python3 main.py
 2. `git log --oneline --graph --all`
 3. `git branch`
 4. 自己新建两个分支，分别改 `app/hello.py` 和 `app/calc.py`
-5. 合并回 `main`
+5. 试一次 `python3 main.py --loop --interval 5`
+6. 合并回 `main`
 
 ## 常见命令速查
 
 ```bash
 python3 main.py
+python3 main.py --loop --interval 5
+python3 -m pip install -r requirements.txt
 git status
 git branch
 git switch main
@@ -208,4 +307,6 @@ git add .
 git commit -m "your message"
 git merge feature/xxx
 git log --oneline --graph --all
+sudo systemctl status demo-app
+sudo journalctl -u demo-app -f
 ```
