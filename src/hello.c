@@ -1,5 +1,0 @@
-#include "hello.h"
-
-const char *get_greeting(void) {
-    return "Hello from WSL Linux demo!";
-}

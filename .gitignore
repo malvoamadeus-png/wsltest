@@ -1,2 +1,3 @@
-build/
 demo-source.tar.gz
+__pycache__/
+*.pyc
