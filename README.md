@@ -93,6 +93,11 @@ code .
 
 这个仓库很适合你自己练下面这套流程。
 
+另外，仓库里已经预置了两个示例分支，你可以直接观察：
+
+- `feature/hello-update`
+- `feature/banner-style`
+
 ### 1. 查看当前分支
 
 ```bash
