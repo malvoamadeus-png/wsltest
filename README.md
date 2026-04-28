@@ -12,6 +12,7 @@
 ```text
 .
 ├── README.md
+├── Dockerfile
 ├── requirements.txt
 ├── app
 │   ├── __init__.py
@@ -100,6 +101,86 @@ code .
 ```bash
 python3 -m pip install -r requirements.txt
 ```
+
+注意：当前这个文件没有第三方依赖，所以某些旧版 `pip` 会提示“没有要安装的包”。这不影响程序运行。
+
+## Docker 最小用法
+
+Docker 可以先简单理解成：把“Python 运行环境 + 你的代码”一起装进一个镜像里。
+
+这样做的好处是：
+
+- 本地和服务器运行环境更一致
+- 少一些“这台机器能跑，那台不能跑”的问题
+- 部署时只需要 `docker run`
+
+这个项目已经提供了：
+
+- [Dockerfile](/mnt/d/Coding/WSLTest/Dockerfile:1)
+- [.dockerignore](/mnt/d/Coding/WSLTest/.dockerignore:1)
+
+### 1. 先安装 Docker
+
+在 Windows 学习时，通常安装：
+
+- Docker Desktop
+
+然后开启：
+
+- WSL 2 integration
+
+如果是在 Linux 服务器上，则通常安装 Docker Engine。
+
+### 2. 构建镜像
+
+在项目目录执行：
+
+```bash
+docker build -t wsltest-python-demo .
+```
+
+### 3. 运行一次性模式
+
+```bash
+docker run --rm wsltest-python-demo
+```
+
+你应该看到和 `python3 main.py` 类似的输出。
+
+### 4. 运行常驻模式
+
+```bash
+docker run --name wsltest-loop wsltest-python-demo python main.py --loop --interval 5
+```
+
+这时容器会持续运行。
+
+### 5. 查看日志
+
+```bash
+docker logs -f wsltest-loop
+```
+
+### 6. 停止并删除容器
+
+```bash
+docker stop wsltest-loop
+docker rm wsltest-loop
+```
+
+## Docker 和 systemd 的关系
+
+这两个不是一回事：
+
+- Docker：解决“程序放在什么运行环境里”
+- systemd：解决“程序在 Linux 上如何作为服务被托管”
+
+常见情况有两种：
+
+- 不用 Docker，直接 `python3` 或 `venv` + `systemd`
+- 用 Docker，再由 Docker 去运行容器
+
+对你现在这个阶段，先学会 Docker 的 `build/run/logs` 就够了，不用急着把 Docker 和 `systemd` 叠在一起。
 
 ## Git 最小练习流程
 
@@ -208,6 +289,13 @@ python3 main.py
 
 更稳妥的学习路径就是直接传源码，因为 Python 项目通常就是这样部署和运行的。
 
+如果服务器装了 Docker，你也可以直接：
+
+```bash
+docker build -t wsltest-python-demo .
+docker run --rm wsltest-python-demo
+```
+
 ## 用 systemd 管理运行
 
 如果你的程序只是临时测试，直接：
@@ -291,7 +379,8 @@ sudo systemctl stop demo-app
 3. `git branch`
 4. 自己新建两个分支，分别改 `app/hello.py` 和 `app/calc.py`
 5. 试一次 `python3 main.py --loop --interval 5`
-6. 合并回 `main`
+6. 试一次 `docker build -t wsltest-python-demo .`
+7. 合并回 `main`
 
 ## 常见命令速查
 
@@ -299,6 +388,12 @@ sudo systemctl stop demo-app
 python3 main.py
 python3 main.py --loop --interval 5
 python3 -m pip install -r requirements.txt
+docker build -t wsltest-python-demo .
+docker run --rm wsltest-python-demo
+docker run --name wsltest-loop wsltest-python-demo python main.py --loop --interval 5
+docker logs -f wsltest-loop
+docker stop wsltest-loop
+docker rm wsltest-loop
 git status
 git branch
 git switch main
